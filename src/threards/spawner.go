@@ -30,32 +30,17 @@ func NewSpawner(img *ebiten.Image) *Spawner {
 	}
 }
 
-// spawnIfNeeded genera enemigos en los carriles conforme la distancia aumenta.
-// playerDistance es la distancia del jugador (en píxels acumulados).
 func (s *Spawner) spawnIfNeeded(playerDistance float64) {
 	// spawn cada 400 píxels de avance (ajustable)
-	threshold := 400.0
+	threshold := 900.0
 	if playerDistance-s.LastSpawnDistance < threshold {
 		return
 	}
-
-	// --- INICIO DE LA MODIFICACIÓN (Spawning de 2 Carriles) ---
-
-	// 1. Ya no generamos n=1 o n=2. SIEMPRE generamos 1.
-	//    Si generamos 2, bloqueamos el juego.
-	// n := 1 + rand.Intn(2) // <-- ELIMINA ESTA LÍNEA
-
-	// 2. Elegimos un carril al azar (0 o 1)
 	lane := rand.Intn(2) 
-
-	// 3. Creamos el enemigo en ese carril
 	startY := -400.0 - float64(rand.Intn(200)) // mucho más arriba
-	e := models.NewEnemy(s.NextID, s.EnemyImg, lane, startY) // Ya no restamos offset aleatorio
+	e := models.NewEnemy(s.NextID, s.EnemyImg, lane, startY) 
 	s.NextID++
 	s.Enemies = append(s.Enemies, e)
-
-	// --- FIN DE LA MODIFICACIÓN ---
-
 	s.LastSpawnDistance = playerDistance
 }
 
@@ -74,22 +59,15 @@ func (s *Spawner) Update(dt float64, playerDistance float64) {
 	for _, en := range s.Enemies {
 		snap := *en
 		job := func() interface{} {
-			// --- INICIO DE LA MODIFICACIÓN ---
-			// En lugar de recalcular la lógica aquí,
-			// llamamos al método Update EN LA SNAPSHOT.
-			// Esto es seguro porque 'snap' es una copia.
-			//
-			// models.Enemy.Update() moverá 'snap.Y' Y
-			// pondrá 'snap.Alive = false' si 'snap.Y > 900'.
+		
 			snap.Update(dt) 
 
-			// Ahora la snapshot 'snap' tiene los valores actualizados
 			res := EnemyResult{
 				ID:    snap.ID,
 				NewY:  snap.Y,     // <-- Valor de la copia actualizada
 				Alive: snap.Alive, // <-- Valor de la copia actualizada
 			}
-			// --- FIN DE LA MODIFICACIÓN ---
+	
 			return res
 		}
 		jobs = append(jobs, job)

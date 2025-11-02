@@ -34,7 +34,7 @@ func NewPlayer(img *ebiten.Image) *Player {
 		// --- INICIO DE LA MODIFICACIÓN ---
 		Lane:     0, // Empieza en el carril izquierdo
 		// --- FIN DE LA MODIFICACIÓN ---
-		Y:        650,
+		Y:        400,
 		Image:    scaled,
 		Alive:    true,
 		Distance: 0,
