@@ -7,12 +7,12 @@ import (
 	"game/src/utils"
 	"image/color"
 	"log"
-	// "time" // <-- ELIMINA ESTA LÍNEA
+	
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/inpututil" // <-- AÑADE ESTA LÍNEA
+	"github.com/hajimehoshi/ebiten/v2/inpututil" 
 )
 
 type Game struct {
@@ -20,7 +20,7 @@ type Game struct {
 	spawner *threards.Spawner
 	bg      *ebiten.Image
 
-	// lastTime time.Time // <-- ELIMINA ESTA LÍNEA
+	
 	gameOver bool
 	victory  bool
 }
@@ -35,36 +35,32 @@ func NewGame() *Game {
 		player:  player,
 		spawner: spawner,
 		bg:      utils.BackgroundImg,
-		// lastTime: time.Now(), // <-- ELIMINA ESTA LÍNEA
+		
 		gameOver: false,
 		victory:  false,
 	}
 }
 
 func (g *Game) Update() error {
-	// --- INICIO DE MODIFICACIÓN (Delta Time) ---
-	// Forma correcta y estable de obtener 'dt' en Ebitengine
+
 	dt := 1.0 / float64(ebiten.DefaultTPS)
-	// --- FIN DE MODIFICACIÓN (Delta Time) ---
+	
 
 
-	// --- INICIO DE MODIFICACIÓN (Input) ---
-	// Usamos 'JustPressed' para que el cambio de carril ocurra UNA VEZ por toque.
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
 		g.player.MoveLeft()
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyRight) {
 		g.player.MoveRight()
 	}
-	// --- FIN DE MODIFICACIÓN (Input) ---
-
-	// update player distance
+	
 	g.player.Update(dt)
 
-	// update spawner with concurrency (fan-out / fan-in)
+	// update spawner con concurrency (fan-out / fan-in)
 	g.spawner.Update(dt, g.player.Distance)
 
-	// check collisions: player rect vs any enemy rect
+	// revisar las coliciones de player rect vs any enemy rect
 	playerRect := g.player.GetRect()
 	for _, e := range g.spawner.AllEnemies() {
 		if e.Alive {
@@ -74,7 +70,7 @@ func (g *Game) Update() error {
 		}
 	}
 
-	// ... (el resto de la función Update: 'km', 'victory', 'reset' no cambia) ...
+	// aca pa elegir kilometraje de meta
 	km := pixelsToKm(g.player.Distance)
 	if km >= 1000 {
 		g.victory = true
@@ -106,14 +102,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 }
 
-// --- INICIO DE MODIFICACIÓN (Layout) ---
+
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	// Usamos el tamaño lógico base
 	return 480, 800
 }
-// --- FIN DE MODIFICACIÓN (Layout) ---
 
-// ... (El resto del archivo: rectsOverlap, resetGameState, reset, pixelsToKm no cambian) ...
 func rectsOverlap(a, b image.Rectangle) bool {
 	return a.Overlaps(b)
 }

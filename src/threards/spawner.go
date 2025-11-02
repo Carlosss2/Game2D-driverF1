@@ -31,13 +31,13 @@ func NewSpawner(img *ebiten.Image) *Spawner {
 }
 
 func (s *Spawner) spawnIfNeeded(playerDistance float64) {
-	// spawn cada 400 píxels de avance (ajustable)
+	// spawn para que aparezcam los carritos píxels de avance 
 	threshold := 900.0
 	if playerDistance-s.LastSpawnDistance < threshold {
 		return
 	}
 	lane := rand.Intn(2) 
-	startY := -400.0 - float64(rand.Intn(200)) // mucho más arriba
+	startY := -400.0 - float64(rand.Intn(200)) 
 	e := models.NewEnemy(s.NextID, s.EnemyImg, lane, startY) 
 	s.NextID++
 	s.Enemies = append(s.Enemies, e)
@@ -45,7 +45,7 @@ func (s *Spawner) spawnIfNeeded(playerDistance float64) {
 }
 
 // Update usa Fan-Out/Fan-In para procesar cada enemigo en paralelo.
-// dt = delta seconds, playerDistance used to spawn
+// 
 func (s *Spawner) Update(dt float64, playerDistance float64) {
 	// possibly spawn
 	s.spawnIfNeeded(playerDistance)
@@ -64,8 +64,8 @@ func (s *Spawner) Update(dt float64, playerDistance float64) {
 
 			res := EnemyResult{
 				ID:    snap.ID,
-				NewY:  snap.Y,     // <-- Valor de la copia actualizada
-				Alive: snap.Alive, // <-- Valor de la copia actualizada
+				NewY:  snap.Y,     // Valor de la copia actualizada
+				Alive: snap.Alive, //Valor de la copia actualizada
 			}
 	
 			return res

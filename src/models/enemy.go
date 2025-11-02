@@ -55,11 +55,7 @@ func (e *Enemy) GetRect() image.Rectangle {
 	x := e.X - float64(w)/2
 	y := e.Y
 
-	// --- INICIO DE LA MODIFICACIÓN (Hitbox MUY Agresivo) ---
-	// Viendo tus capturas, el espacio transparente es enorme.
-	// Vamos a encoger el hitbox en un 70% (35% de cada lado).
-	// Si esto es muy pequeño, reduce el valor (ej: a 0.30).
-	// Si sigue siendo muy grande, auméntalo (ej: a 0.40).
+	
 	paddingX := float64(w) * 0.42
 	paddingY := float64(h) * 0.42
 
@@ -69,5 +65,5 @@ func (e *Enemy) GetRect() image.Rectangle {
 	y2 := int(y + float64(h) - paddingY)
 
 	return image.Rect(x1, y1, x2, y2)
-	// --- FIN DE LA MODIFICACIÓN ---
+	
 }
