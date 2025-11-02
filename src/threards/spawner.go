@@ -35,18 +35,27 @@ func NewSpawner(img *ebiten.Image) *Spawner {
 func (s *Spawner) spawnIfNeeded(playerDistance float64) {
 	// spawn cada 400 píxels de avance (ajustable)
 	threshold := 400.0
-	if playerDistance - s.LastSpawnDistance < threshold {
+	if playerDistance-s.LastSpawnDistance < threshold {
 		return
 	}
-	// generamos 1-2 nuevos autos en carriles aleatorios delante del jugador
-	n := 1 + rand.Intn(2)
-	startY := -400.0 - float64(rand.Intn(200)) // mucho más arriba // fuera de pantalla por arriba
-	for i := 0; i < n; i++ {
-		lane := rand.Intn(3) // 0..2
-		e := models.NewEnemy(s.NextID, s.EnemyImg, lane, startY - float64(rand.Intn(200)))
-		s.NextID++
-		s.Enemies = append(s.Enemies, e)
-	}
+
+	// --- INICIO DE LA MODIFICACIÓN (Spawning de 2 Carriles) ---
+
+	// 1. Ya no generamos n=1 o n=2. SIEMPRE generamos 1.
+	//    Si generamos 2, bloqueamos el juego.
+	// n := 1 + rand.Intn(2) // <-- ELIMINA ESTA LÍNEA
+
+	// 2. Elegimos un carril al azar (0 o 1)
+	lane := rand.Intn(2) 
+
+	// 3. Creamos el enemigo en ese carril
+	startY := -400.0 - float64(rand.Intn(200)) // mucho más arriba
+	e := models.NewEnemy(s.NextID, s.EnemyImg, lane, startY) // Ya no restamos offset aleatorio
+	s.NextID++
+	s.Enemies = append(s.Enemies, e)
+
+	// --- FIN DE LA MODIFICACIÓN ---
+
 	s.LastSpawnDistance = playerDistance
 }
 

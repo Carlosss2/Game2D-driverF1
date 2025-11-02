@@ -7,10 +7,12 @@ import (
 	"game/src/utils"
 	"image/color"
 	"log"
-	"time"
-"image"
+	// "time" // <-- ELIMINA ESTA LÍNEA
+	"image"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil" // <-- AÑADE ESTA LÍNEA
 )
 
 type Game struct {
@@ -18,44 +20,43 @@ type Game struct {
 	spawner *threards.Spawner
 	bg      *ebiten.Image
 
-	lastTime time.Time
+	// lastTime time.Time // <-- ELIMINA ESTA LÍNEA
 	gameOver bool
 	victory  bool
 }
 
 func NewGame() *Game {
 	if utils.BackgroundImg == nil || utils.PlayerImg == nil || utils.EnemyImg == nil {
-		// ensure assets initialized; InitAssets called in main
 		log.Fatal("assets not initialized - call utils.InitAssets() before NewGame()")
 	}
 	player := models.NewPlayer(utils.PlayerImg)
 	spawner := threards.NewSpawner(utils.EnemyImg)
 	return &Game{
-		player: player,
+		player:  player,
 		spawner: spawner,
-		bg: utils.BackgroundImg,
-		lastTime: time.Now(),
+		bg:      utils.BackgroundImg,
+		// lastTime: time.Now(), // <-- ELIMINA ESTA LÍNEA
 		gameOver: false,
-		victory: false,
+		victory:  false,
 	}
 }
 
 func (g *Game) Update() error {
-	// delta time
-	now := time.Now()
-	dt := now.Sub(g.lastTime).Seconds()
-	if dt > 0.1 {
-		dt = 0.1 // clamp
-	}
-	g.lastTime = now
+	// --- INICIO DE MODIFICACIÓN (Delta Time) ---
+	// Forma correcta y estable de obtener 'dt' en Ebitengine
+	dt := 1.0 / float64(ebiten.DefaultTPS)
+	// --- FIN DE MODIFICACIÓN (Delta Time) ---
 
-	// input: move left/right (A/D or arrow keys)
-	if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyLeft) {
+
+	// --- INICIO DE MODIFICACIÓN (Input) ---
+	// Usamos 'JustPressed' para que el cambio de carril ocurra UNA VEZ por toque.
+	if inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
 		g.player.MoveLeft()
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyRight) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyRight) {
 		g.player.MoveRight()
 	}
+	// --- FIN DE MODIFICACIÓN (Input) ---
 
 	// update player distance
 	g.player.Update(dt)
@@ -73,38 +74,25 @@ func (g *Game) Update() error {
 		}
 	}
 
-	// check victory: player.Distance in pixels -> convert to km. We'll define 100 px = 1 km (configurable)
-	// To reach 1000 km: need 1000 * 100 px = 100000 px (you can adjust conversion). We'll compute km dynamically.
+	// ... (el resto de la función Update: 'km', 'victory', 'reset' no cambia) ...
 	km := pixelsToKm(g.player.Distance)
 	if km >= 1000 {
 		g.victory = true
 	}
-
-	// restart with R
 	if (g.gameOver || g.victory) && ebiten.IsKeyPressed(ebiten.KeyR) {
 		g.reset()
 	}
-
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	// draw background (stretch to screen)
 	op := &ebiten.DrawImageOptions{}
 	screen.DrawImage(g.bg, op)
-
-	// draw player
 	g.player.Draw(screen)
-
-	// draw enemies
 	g.spawner.Draw(screen)
-
-	// hud
 	km := pixelsToKm(g.player.Distance)
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("KM: %.2f / 1000.00\nA: izquierda  D: derecha  R: reiniciar", km))
-
 	if g.gameOver {
-		// overlay red
 		overlay := ebiten.NewImage(480, 800)
 		overlay.Fill(color.RGBA{150, 0, 0, 120})
 		screen.DrawImage(overlay, nil)
@@ -118,8 +106,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 }
 
-func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) { return 720, 1200 }
+// --- INICIO DE MODIFICACIÓN (Layout) ---
+func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
+	// Usamos el tamaño lógico base
+	return 480, 800
+}
+// --- FIN DE MODIFICACIÓN (Layout) ---
 
+// ... (El resto del archivo: rectsOverlap, resetGameState, reset, pixelsToKm no cambian) ...
 func rectsOverlap(a, b image.Rectangle) bool {
 	return a.Overlaps(b)
 }

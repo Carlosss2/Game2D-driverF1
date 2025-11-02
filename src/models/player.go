@@ -6,11 +6,15 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// Ajustamos los carriles para que estén bien centrados dentro de 480 px de ancho
-// Ahora hay tres carriles: izquierda, centro, derecha
-var LaneX = []float64{200, 360, 520} // posiciones horizontales de cada carril
+// --- INICIO DE LA MODIFICACIÓN (2 Carriles) ---
+// Ahora hay dos carriles: izquierda (0), derecha (1)
+// Centrados en una pantalla de 480px de ancho
+var LaneX = []float64{160, 320}
+// --- FIN DE LA MODIFICACIÓN ---
+
 
 type Player struct {
+// ... (struct no cambia) ...
 	Lane     int
 	Y        float64
 	Image    *ebiten.Image
@@ -20,39 +24,41 @@ type Player struct {
 }
 
 func NewPlayer(img *ebiten.Image) *Player {
-	// Redimensionamos el auto para hacerlo más pequeño
+	// ... (escalado de imagen no cambia) ...
 	scaled := ebiten.NewImage(img.Bounds().Dx()/2, img.Bounds().Dy()/2)
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(0.5, 0.5)
 	scaled.DrawImage(img, op)
 
 	return &Player{
-		Lane:     1,        // empieza en el carril central
-		Y:        650,      // más arriba, para que se vea completo
+		// --- INICIO DE LA MODIFICACIÓN ---
+		Lane:     0, // Empieza en el carril izquierdo
+		// --- FIN DE LA MODIFICACIÓN ---
+		Y:        650,
 		Image:    scaled,
 		Alive:    true,
 		Distance: 0,
-		Speed:    180,      // velocidad base
+		Speed:    180,
 	}
 }
 
+// --- INICIO DE LA MODIFICACIÓN (Lógica de Movimiento) ---
 func (p *Player) MoveLeft() {
-	if p.Lane > 0 {
-		p.Lane--
-	}
+	p.Lane = 0 // Ir al carril izquierdo
 }
 
 func (p *Player) MoveRight() {
-	if p.Lane < 2 {
-		p.Lane++
-	}
+	p.Lane = 1 // Ir al carril derecho
 }
+// --- FIN DE LA MODIFICACIÓN ---
 
 func (p *Player) Update(dt float64) {
+// ... (no cambia) ...
 	p.Distance += p.Speed * dt
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
+// ... (no cambia) ...
 	op := &ebiten.DrawImageOptions{}
 	x := LaneX[p.Lane] - float64(p.Image.Bounds().Dx())/2
 	op.GeoM.Translate(x, p.Y)
@@ -64,10 +70,9 @@ func (p *Player) GetRect() image.Rectangle {
 	x := LaneX[p.Lane] - float64(w)/2
 	y := p.Y
 
-	// --- INICIO DE LA MODIFICACIÓN (Más Agresiva) ---
-
-	// Encogemos el hitbox del jugador en un 20% (10% de cada lado).
-	// Ajusta este valor (0.10) si es necesario.
+	// --- INICIO DE LA MODIFICACIÓN (Hitbox) ---
+	// Encogemos el hitbox del jugador en un 30% (15% de cada lado).
+	// El auto del jugador (McLaren) parece mejor recortado que el enemigo.
 	paddingX := float64(w) * 0.20
 	paddingY := float64(h) * 0.20
 

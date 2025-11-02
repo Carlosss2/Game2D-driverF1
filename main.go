@@ -14,7 +14,11 @@ func main() {
 
 	g := engine.NewGame()
 
-	ebiten.SetWindowSize(960, 1200)
+	// --- INICIO DE LA MODIFICACIÓN ---
+	// Vamos a usar el tamaño lógico del juego para la ventana.
+	ebiten.SetWindowSize(480, 800)
+	// --- FIN DE LA MODIFICACIÓN ---
+
 	ebiten.SetWindowTitle("Three-Lane Racer")
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
