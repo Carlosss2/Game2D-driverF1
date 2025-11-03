@@ -31,8 +31,8 @@ func NewSpawner(img *ebiten.Image) *Spawner {
 }
 
 func (s *Spawner) spawnIfNeeded(playerDistance float64) {
-	// spawn para que aparezcam los carritos píxels de avance 
-	threshold := 900.0
+	// spawn para que aparezcam los carritos pixels de avance 
+	threshold := 1000.0
 	if playerDistance-s.LastSpawnDistance < threshold {
 		return
 	}
@@ -47,57 +47,54 @@ func (s *Spawner) spawnIfNeeded(playerDistance float64) {
 // Update usa Fan-Out/Fan-In para procesar cada enemigo en paralelo.
 // 
 func (s *Spawner) Update(dt float64, playerDistance float64) {
-	// possibly spawn
 	s.spawnIfNeeded(playerDistance)
 
 	if len(s.Enemies) == 0 {
 		return
 	}
 
-	jobs := []concurrency.Job{}
-	// create a job per enemy using snapshot
-	for _, en := range s.Enemies {
+	// separar los enemigos en grupos
+	var group1Jobs, group2Jobs []concurrency.Job
+	for i, en := range s.Enemies {
 		snap := *en
 		job := func() interface{} {
-		
-			snap.Update(dt) 
-
-			res := EnemyResult{
+			snap.Update(dt)
+			return EnemyResult{
 				ID:    snap.ID,
-				NewY:  snap.Y,     // Valor de la copia actualizada
-				Alive: snap.Alive, //Valor de la copia actualizada
+				NewY:  snap.Y,
+				Alive: snap.Alive,
 			}
-	
-			return res
 		}
-		jobs = append(jobs, job)
+		if i%2 == 0 {
+			group1Jobs = append(group1Jobs, job)
+		} else {
+			group2Jobs = append(group2Jobs, job)
+		}
 	}
 
-	// fan-out
-	resCh := concurrency.FanOut(jobs)
+	// fan-out por grupo
+	resCh1 := concurrency.FanOut(group1Jobs)
+	resCh2 := concurrency.FanOut(group2Jobs)
 
-	// fan-in: collect results and apply on main thread
+	// fan-in combina ambos canales
+	resCh := concurrency.FanIn(resCh1, resCh2)
+
+	// fan-in: colectar resultados
 	newEnemies := []*models.Enemy{}
 	for v := range resCh {
 		r, ok := v.(EnemyResult)
 		if !ok {
 			continue
 		}
-		// find original
-		var orig *models.Enemy
 		for _, e := range s.Enemies {
 			if e.ID == r.ID {
-				orig = e
+				e.Y = r.NewY
+				e.Alive = r.Alive
+				if e.Alive {
+					newEnemies = append(newEnemies, e)
+				}
 				break
 			}
-		}
-		if orig == nil {
-			continue
-		}
-		orig.Y = r.NewY
-		orig.Alive = r.Alive
-		if orig.Alive {
-			newEnemies = append(newEnemies, orig)
 		}
 	}
 	s.Enemies = newEnemies

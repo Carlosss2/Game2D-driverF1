@@ -72,7 +72,7 @@ func (g *Game) Update() error {
 
 	// aca pa elegir kilometraje de meta
 	km := pixelsToKm(g.player.Distance)
-	if km >= 1000 {
+	if km >= 100 {
 		g.victory = true
 	}
 	if (g.gameOver || g.victory) && ebiten.IsKeyPressed(ebiten.KeyR) {
@@ -87,7 +87,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.player.Draw(screen)
 	g.spawner.Draw(screen)
 	km := pixelsToKm(g.player.Distance)
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("KM: %.2f / 1000.00\nA: izquierda  D: derecha  R: reiniciar", km))
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("KM: %.2f / 100.00\nA: izquierda  D: derecha  R: reiniciar", km))
 	if g.gameOver {
 		overlay := ebiten.NewImage(480, 800)
 		overlay.Fill(color.RGBA{150, 0, 0, 120})

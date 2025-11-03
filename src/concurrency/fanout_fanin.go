@@ -25,7 +25,7 @@ func FanOut(jobs []Job) <-chan interface{} {
 	return out
 }
 
-// FanIn combina varios canales en uno (no lo utilizamos aquí pero lo dejamos)
+// FanIn combina varios canales en uno 
 func FanIn(chs ...<-chan interface{}) <-chan interface{} {
 	out := make(chan interface{})
 	var wg sync.WaitGroup
