@@ -93,7 +93,7 @@ func (s *Spawner) Update(dt float64, playerDistance float64) {
 				if e.Alive {
 					newEnemies = append(newEnemies, e)
 				}
-				break
+				
 			}
 		}
 	}
